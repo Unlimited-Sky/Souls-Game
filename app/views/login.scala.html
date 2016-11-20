@@ -1,0 +1,15 @@
+@import helper._
+
+@(loginForm: Form[User])(implicit msg: Messages)
+
+@main("Login") {
+
+  @form(action = routes.SoulsWebController.login()) {
+    @inputText(
+      loginForm("username"),
+      '_showConstraints -> false,
+      '_label -> "User Name: "
+    )
+    <input type="submit" value="Login">
+  }
+}

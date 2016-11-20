@@ -1,0 +1,39 @@
+@(user: User)
+
+@main(s"Playing as ${user.username}") {
+  <body>You are connected as @user.username</body>
+  <br>
+  <textarea readonly name="gameLog" id="gameLog" cols="100" rows="48"></textarea>
+  <br>
+  <input type="text" id="message" name="message" placeholder="Press return to send"/>
+  <button id="send" class="button postfix">Send</button>
+  <button id="logout" class="button postfix">Logout</button>
+
+  <script src='@routes.Assets.versioned("javascripts/websocket.js")'></script>
+  <script>
+    $(window).load ( function ( ) {
+
+      initWebsocket('@routes.SoulsWebController.socket(user)');
+
+      $('#send').click(function (e) {
+        var m =  $('#message').val();
+        if (m) {
+          doSend(m);
+          $('#message').val("");
+        }
+        $('#message').focus();
+      });
+
+      //also doSend the text when user hits return on the input
+      $('#message').keypress(function(e) {
+        if(e.which == 13) {
+          $('#send').click();
+        }
+      });
+
+      $('#logout').click(function (e) {
+            doLogout();
+      });
+    });
+  </script>
+}

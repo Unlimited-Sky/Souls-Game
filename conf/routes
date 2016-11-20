@@ -1,0 +1,12 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET     /                           controllers.SoulsWebController.index
+
+GET     /login                      controllers.SoulsWebController.prepareLogin
+POST    /login                      controllers.SoulsWebController.login
+GET     /socket/:user               controllers.SoulsWebController.socket(user: models.User)
+GET     /play/:user                 controllers.SoulsWebController.play(user: models.User)
+
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
