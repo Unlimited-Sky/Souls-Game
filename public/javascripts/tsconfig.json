@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "removeComments": true
+    },
+
+    "files": [
+        "soulsGame.ts"
+    ]
+}
