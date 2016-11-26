@@ -25,13 +25,13 @@ extends Actor with ActorLogging {
         "message" -> msg))
 
     case GameStateMessage(gameState) =>
-    //TODO send the gamestate to clients
-      //val toSend = buildGamestateJson(components, events)
+      out ! Json.toJson(Json.obj(
+        "type" -> "gameStateMessage",
+        "message" -> gameState
+      ))
     case other =>
       log.error(s"[ActorPlayerClient] Not handled: $other")
   }
-
-  //buil
 
   override def preStart() {
     println("prestart")

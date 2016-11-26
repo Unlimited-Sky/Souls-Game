@@ -4,8 +4,6 @@ import ecs.Entity
 import scala.util.Random
 import scala.collection.mutable.ListBuffer
 
-import play.api.libs.json._
-
 class CardStack {
   var cards: ListBuffer[Entity] = new ListBuffer()
 
@@ -28,7 +26,7 @@ class CardStack {
 
   //shuffles the deck
   def Shuffle(): CardStack = {
-    //TODO: cards = util.Random.shuffle(cards)
+    cards = util.Random.shuffle(cards)
     this
   }
 
@@ -41,11 +39,3 @@ class CardStack {
     this
   }
 }
-
-// object CardStack {
-//   implicit val writes = new Writes[CardStack] {
-//     def writes(cs: CardStack) = Json.obj(
-//         "cards" -> cs.cards
-//     )
-//   }
-//}

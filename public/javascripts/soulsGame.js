@@ -29,11 +29,14 @@ var Websocket;
     }
     function onMessage(evt) {
         var json = jQuery.parseJSON(evt.data);
-        console.log("json: " + json);
         var type = json.type;
         var html;
         if (type == "textMessage") {
             html = json.user + ": " + json.message;
+        }
+        else if (type == "gameStateMessage") {
+            html = type + ": " + json.message;
+            Game.onRecGameState(json.message);
         }
         else {
             html = "MSG ERROR: " + json.message;
@@ -48,10 +51,40 @@ var Websocket;
         $('#gameLog').append(htmlLine);
     }
 })(Websocket || (Websocket = {}));
+var Game;
+(function (Game) {
+    var players = Array();
+    function onRecGameState(gs) {
+        var json = jQuery.parseJSON(gs);
+        var playerUIDs = Array();
+        Object.keys(json.HasName).forEach(function (v) { return console.log(json.HasName[v].name); });
+        Object.keys(json.HasHP).forEach(function (v) { return console.log(json.HasHP[v].currHP); });
+        Object.keys(json.HasPlayerData).forEach(function (pKey) { return playerUIDs.push(pKey); });
+        playerUIDs.forEach(function (p) {
+            players.push(buildPlayerDataFromGameState(p, json));
+        });
+        players.forEach(function (p) { return console.log(p); });
+    }
+    Game.onRecGameState = onRecGameState;
+    function buildPlayerDataFromGameState(uid, gs) {
+        var pd = new GameObjects.PlayerData(gs.HasName[uid].name);
+        pd.UID = uid;
+        pd.currentLife = gs.HasHP[uid].currHP;
+        pd.intensity = gs.HasPlayerData[uid].intensity;
+        pd.power = gs.HasPlayerData[uid].power;
+        pd.personaCount = gs.HasPlayerData[uid].deck.length;
+        pd.driveCount = gs.HasPlayerData[uid].length;
+        pd.hand = gs.HasPlayerData[uid].length;
+        pd.terminus = gs.HasPlayerData[uid].terminus;
+        pd.void = gs.HasPlayerData[uid].void;
+        return pd;
+    }
+})(Game || (Game = {}));
 var GameObjects;
 (function (GameObjects) {
     var PlayerData = (function () {
         function PlayerData(playerName) {
+            this.UID = "";
             this.playerName = playerName;
             this.currentLife = 0;
             this.intensity = "";
@@ -61,12 +94,12 @@ var GameObjects;
             this.hand = new CardZone(false);
             this.terminus = new CardZone(true);
             this.void = new CardZone(true);
-            this.inPlay = new CardZone(true);
         }
         PlayerData.prototype.loadDeck = function () {
         };
         return PlayerData;
     }());
+    GameObjects.PlayerData = PlayerData;
     var Card = (function () {
         function Card(entityID, cardID) {
             this.entityID = entityID;

@@ -10,7 +10,7 @@ import gameServer.Messages._
 //This class manages the akka side of one game room
 //and houses the GameEngine object
 class ActorGameRoom extends Actor with ActorLogging {
-  val maxPlayers = 3
+  val maxPlayers = 2
 
   val gameEngine = new GameEngine(this)
 

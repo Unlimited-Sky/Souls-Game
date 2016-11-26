@@ -75,9 +75,9 @@ class GameEngine(val roomActor: ActorGameRoom) {
     
     import play.api.libs.json._
 
-    println("Game Initialized!")
+    //println("Game Initialized!")
     publishGameState()
-    println("Game state sent!")
+    //println("Game state sent!")
   }
 
   def initializePlayer(player: Entity): Unit = {
