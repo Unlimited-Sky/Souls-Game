@@ -72,10 +72,12 @@ class GameEngine(val roomActor: ActorGameRoom) {
     players.foreach(p => eventManager.enqueueNewEvent(new DrawDrive(gameRoom, p, 1)))
 
     enterNextPhase()
+    
+    import play.api.libs.json._
 
     println("Game Initialized!")
-   
-    roomActor.sendGameStateToAll()
+    publishGameState()
+    println("Game state sent!")
   }
 
   def initializePlayer(player: Entity): Unit = {
@@ -87,5 +89,9 @@ class GameEngine(val roomActor: ActorGameRoom) {
   	val connectedPlayerEntity = entityManager.generateEntity()
     players += connectedPlayerEntity
     componentManager.createComponent[HasName](connectedPlayerEntity, new HasName(username))
+  }
+
+  private def publishGameState() {
+    roomActor.sendGameStateToAll(componentManager.getComponentsJSON);
   }
 }

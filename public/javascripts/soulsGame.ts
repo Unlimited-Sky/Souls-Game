@@ -3,10 +3,10 @@
 
 //Renderer - all rendering related code
 module Renderer {
-	var renderer = PIXI.autoDetectRenderer(1280, 720, {backgroundColor : 0x10bb99});
+	let renderer = PIXI.autoDetectRenderer(1280, 720, {backgroundColor : 0x10bb99});
 	document.body.appendChild(renderer.view);
 
-	var stage = new PIXI.Container();
+	let stage = new PIXI.Container();
 
 	animate();
 
@@ -18,10 +18,10 @@ module Renderer {
 
 //Websocket - the onmessage func will handle a lot of logic
 module Websocket {
-	var websocket;
+	let websocket;
 
-	export function initWebsocket(websocketPath) {
-		var websocketURL = "ws://" + window.location.host + websocketPath;
+	export function initWebsocket(websocketPath: string) {
+		let websocketURL = "ws://" + window.location.host + websocketPath;
 		websocket = new WebSocket(websocketURL);
 
 		websocket.onopen = (evt) => onOpen(evt);
@@ -39,11 +39,12 @@ module Websocket {
 	}
 
 	function onMessage(evt) {
-		var json = jQuery.parseJSON(evt.data);
-		var type = json.type;
-		var html;
+		let json = jQuery.parseJSON(evt.data);
+		console.log("json: " + json);
+		let type = json.type;
+		let html;
 
-		if(type == "message") {
+		if(type == "textMessage") {
 				html = json.user + ": " + json.message;
 		} else {
 				html = "MSG ERROR: " + json.message;
@@ -105,8 +106,7 @@ module GameObjects {
 			this.entityID = entityID;
 			this.cardID = cardID;
 		}
-		
-		
+			
 		addToStage() {
 		}
 	}

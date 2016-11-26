@@ -29,9 +29,10 @@ var Websocket;
     }
     function onMessage(evt) {
         var json = jQuery.parseJSON(evt.data);
+        console.log("json: " + json);
         var type = json.type;
         var html;
-        if (type == "message") {
+        if (type == "textMessage") {
             html = json.user + ": " + json.message;
         }
         else {

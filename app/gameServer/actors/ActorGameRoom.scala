@@ -10,7 +10,7 @@ import gameServer.Messages._
 //This class manages the akka side of one game room
 //and houses the GameEngine object
 class ActorGameRoom extends Actor with ActorLogging {
-  val maxPlayers = 2
+  val maxPlayers = 3
 
   val gameEngine = new GameEngine(this)
 
@@ -30,7 +30,7 @@ class ActorGameRoom extends Actor with ActorLogging {
     //Todo: load the players deck
     players += user -> username
     gameEngine.onPlayerConnect(username)
-    messageEveryone(s"$username has joined the game.")
+    messageEveryone(new TextMessage(s"$username has joined the game."))
 
     if (!gameEngine.gameStarted)
       checkGameReady()
@@ -39,7 +39,7 @@ class ActorGameRoom extends Actor with ActorLogging {
 
     case PeerConnect(user, username) =>
     peers += user -> username
-    messageEveryone(s"$username has joined as a spectator.")
+    messageEveryone(new TextMessage(s"$username has joined as a spectator."))
 
     case PeerDisconnect(user, username) =>
 
@@ -47,17 +47,16 @@ class ActorGameRoom extends Actor with ActorLogging {
       log.error(s"[ActorGameState] Not handled: $other")
   }
 
-  def sendGameStateToAll(): Unit = {
-    //TODO: Update the game state to all game clients
-    //playersData.foreach({ case (n, d) => messageEveryone("\n" +  players(n)._2 + ": " + d.ToString() + "\n")})
+  def sendGameStateToAll(gameState: String): Unit = {
+    messageEveryone(new GameStateMessage(gameState))
   }
 
-  def messageEveryone(msg: String) = {
+  def messageEveryone[T](msg: T) = {
     messageUserMap(players, msg)
     messageUserMap(peers, msg)
   }
 
-  def messageUserMap(m: Map[ActorRef, String], msg: String): Unit = {
-    m.foreach({case (u, _) => u ! TextMessage(msg)})
+  def messageUserMap[T](m: Map[ActorRef, String], msg: T): Unit = {
+    m.foreach({case (u, _) => u ! msg})
   }
 }

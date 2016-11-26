@@ -1,6 +1,10 @@
 package gameServer
 
 import akka.actor.ActorRef
+import scala.collection.mutable.{Queue, Map}
+import ecs.Entity
+import ecs.events.AEvent
+import ecs.components.AComponent
 
 object Messages {
   case class GameStateUpdate()
@@ -16,4 +20,6 @@ object Messages {
 
   case class PeerConnect(actor: ActorRef, username: String)
   case class PeerDisconnect(actor: ActorRef, username: String)
+
+  case class GameStateMessage(gameState: String)
 }

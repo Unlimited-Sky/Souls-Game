@@ -4,9 +4,13 @@ import akka.actor.{Actor, ActorLogging, ActorRef, Terminated, Props}
 import play.libs.Akka
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.collection.mutable.{Map, Queue}
 import play.api.libs.json._
 
 import gameServer.Messages._
+import ecs.Entity
+import ecs.events.AEvent
+import ecs.components.AComponent
 
 import helpers.CardStack
 
@@ -15,11 +19,19 @@ extends Actor with ActorLogging {
 
   def receive = {
     case TextMessage(msg) =>
-      out ! Json.toJson(Json.obj("message" -> msg))
+      out ! Json.toJson(Json.obj(
+        "type" -> "textMessage",
+        "user" -> "SERVER",
+        "message" -> msg))
 
+    case GameStateMessage(gameState) =>
+    //TODO send the gamestate to clients
+      //val toSend = buildGamestateJson(components, events)
     case other =>
       log.error(s"[ActorPlayerClient] Not handled: $other")
   }
+
+  //buil
 
   override def preStart() {
     println("prestart")
