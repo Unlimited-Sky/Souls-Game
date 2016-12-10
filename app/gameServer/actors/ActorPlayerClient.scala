@@ -38,6 +38,13 @@ extends Actor with ActorLogging {
         "type" -> "gameStateMessage",
         "message" -> gameState
       ))
+    
+    case PlayerUIDMessage(entity) =>
+      println(entity)
+      out ! Json.toJson(Json.obj(
+        "type" -> "playerUIDMessage",
+        "uid" -> entity.UID
+      ))
     case other =>
       log.error(s"[ActorPlayerClient] Not handled: $other")
   }

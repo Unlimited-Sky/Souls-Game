@@ -1,7 +1,6 @@
 package ecs.events
 
-import ecs.systems.HPSystem
-import ecs.systems.HPSystemNode
+import ecs.systems.{HPSystem, HPSystemNode}
 import ecs.components.HasHP
 import ecs.{ Entity, ComponentManager, SystemManager, EventManager }
 

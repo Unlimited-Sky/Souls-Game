@@ -1,8 +1,7 @@
 package ecs.events
 
-//import ecs.systems.
-//import ecs.systems.
-//import ecs.components.
+import ecs.systems.{CardDrawSystem, CardDrawSystemNode}
+import ecs.components.HasPlayerData
 import ecs.{ Entity, ComponentManager, SystemManager, EventManager }
 
 //Todo: this event
@@ -11,7 +10,7 @@ class DrawCard(owner: Entity, val target: Entity, val howMany: Int) extends AEve
   def onEnqueue(): Unit = {}
 
   def execute(em: EventManager, cm: ComponentManager, sm: SystemManager): Unit = {
-    //cm.getComponent[HasHP](target).foreach(c => sm.getSystem[HPSystem]().addNode(new HPSystemNode(c, howMuch)))
+    cm.getComponent[HasPlayerData](target).foreach(c => sm.getSystem[CardDrawSystem]().addNode(new CardDrawSystemNode(c, howMany)))
   }
 
   def onDequeue(): Unit = {}

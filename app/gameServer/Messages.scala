@@ -17,6 +17,7 @@ object Messages {
 
   case class PlayerConnect(actor: ActorRef, username: String)
   case class PlayerDisconnect(actor: ActorRef, username: String)
+  case class PlayerUIDMessage(entity: Entity)
 
   case class PeerConnect(actor: ActorRef, username: String)
   case class PeerDisconnect(actor: ActorRef, username: String)

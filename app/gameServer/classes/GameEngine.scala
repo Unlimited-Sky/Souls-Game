@@ -29,6 +29,21 @@ class GameEngine(val roomActor: ActorGameRoom) {
   systemManager.init(eventManager)
   val cardLoader = new CardLoader(entityManager, componentManager)
 
+  //initialize all the systems
+  systemManager.createSystem[HPSystem]()
+  systemManager.createSystem[CardDrawSystem]()
+
+  // tick the game engine
+   def tick() {
+     println("tick")
+
+     if (eventManager.hasEvent == true) {
+        eventManager.execute()
+        systemManager.processAll()
+        eventManager.dequeueEvent()
+     }
+   }
+
 	//Increment the state, and do any game-wide changes
   def enterNextPhase(): Unit = {
     currentGamePhase match {
@@ -85,7 +100,7 @@ class GameEngine(val roomActor: ActorGameRoom) {
     componentManager.createComponent[HasHP](player, new HasHP(30))
   }
 
-  def onPlayerConnect(username: String): Unit = {
+  def onPlayerConnect(username: String): Entity = {
   	val connectedPlayerEntity = entityManager.generateEntity()
     players += connectedPlayerEntity
     componentManager.createComponent[HasName](connectedPlayerEntity, new HasName(username))
@@ -95,6 +110,8 @@ class GameEngine(val roomActor: ActorGameRoom) {
     //TODO add more decks
     componentManager.getComponent[HasPlayerData](connectedPlayerEntity).get.deck.addCards(cardLoader.loadDeck()) 
     componentManager.getComponent[HasPlayerData](connectedPlayerEntity).get.driveDeck.addCards(cardLoader.loadDriveDeck())
+
+    connectedPlayerEntity
   }
 
   def onPlayerDisconnect(username: String): Unit = {

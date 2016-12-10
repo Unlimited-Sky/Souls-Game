@@ -89,13 +89,17 @@ module Websocket {
             html = json.user + ": " + json.message;
         }
         else if (type == "gameStateMessage") {
-            html = type + ": " + json.message;
+            //html = type + ": " + json.message;
             Game.onRecGameState(json.message)
+        } else if (type == "playerUIDMessage") {
+            html = "You are Player UID: " + json.uid;
+            Game.setThisPlayerUID(json.uid)
         } else {
             html = "MSG ERROR: " + json.message;
         }
 
-        writeToScreen(html);
+        if (html != undefined)
+            writeToScreen(html);
     }
 
     function onError(evt) {
@@ -115,12 +119,13 @@ module Websocket {
 module Game {
     let players = Array<GameObjects.PlayerData>();
     let cards = Array<GameObjects.Card>();
+    let thisPlayerUID: string;
 
     //one "tick" of the game
     export function update() {
-			players.forEach(p => {
-				p.playerZones.update()
-			})
+        players.forEach(p => {
+            p.playerZones.update()
+        })
     }
 
     export function onRecGameState(gs: string) {
@@ -132,12 +137,12 @@ module Game {
         //Object.keys(json.HasName).forEach(v => console.log(json.HasName[v].name));
         //Object.keys(json.HasHP).forEach(v => console.log(json.HasHP[v].currHP));
 
-				//make cards
+        //make cards
         let cardUIDs = Array<string>();
         Object.keys(json.CardData).forEach(cKey => cardUIDs.push(cKey));
 
-				cardUIDs.forEach(c => {
-           cards.push(buildCardFromGameState(c, json));
+        cardUIDs.forEach(c => {
+            cards.push(buildCardFromGameState(c, json));
         });
 
         Object.keys(json.HasPlayerData).forEach(pKey => playerUIDs.push(pKey));
@@ -146,12 +151,20 @@ module Game {
             players.push(buildPlayerDataFromGameState(p, json));
         });
 
-        players.forEach(p => console.log(p))
+        players.forEach(p => console.log(p));
+    }
+
+    export function setThisPlayerUID(uid: string) {
+        thisPlayerUID = uid;
+        console.log("Player UID: " + thisPlayerUID);
+    }
+
+    export function getThisPlayerUID() {
+        return thisPlayerUID;
     }
 
     function buildPlayerDataFromGameState(uid: string, gs: any) {
-        let pd = new GameObjects.PlayerData(gs.HasName[uid].name);
-        pd.UID = uid;
+        let pd = new GameObjects.PlayerData(gs.HasName[uid].name, uid);
         pd.currentLife = gs.HasHP[uid].currHP;
         pd.intensity = gs.HasPlayerData[uid].intensity;
         pd.power = gs.HasPlayerData[uid].power;
@@ -166,23 +179,23 @@ module Game {
         return pd;
     }
 
-		function buildCardListFromGameStateArray(data: any) {
-			let toReturn = new Array<GameObjects.Card>();
+    function buildCardListFromGameStateArray(data: any) {
+        let toReturn = new Array<GameObjects.Card>();
 
-			let ids: Array<string> = data.map(d => d.UID);
+        let ids: Array<string> = data.map(d => d.UID);
 
-			//todo: maybe use filter ??
-			ids.forEach(id => {
-				cards.forEach(c => {
-					if (id == c.UID) {
-						c.loadRenderData();
-						toReturn.push(c);
-					}
-				})
-			})
+        //todo: maybe use filter ??
+        ids.forEach(id => {
+            cards.forEach(c => {
+                if (id == c.UID) {
+                    c.loadRenderData();
+                    toReturn.push(c);
+                }
+            })
+        })
 
-			return toReturn;
-		}
+        return toReturn;
+    }
 
     function buildCardFromGameState(uid: string, gs: any) {
         let cd = new GameObjects.Card(gs.CardData[uid]);
@@ -216,15 +229,16 @@ module GameObjects {
         driveCount: number;
         playerZones: PlayerZones;
 
-        constructor(playerName: string) {
-            this.UID = ""
+        constructor(playerName: string, uid: string) {
+            this.UID = uid;
             this.playerName = playerName;
             this.currentLife = 0;
             this.intensity = "";
             this.power = 0;
             this.personaCount = 0;
             this.driveCount = 0;
-            this.playerZones = new PlayerZones();
+
+            this.playerZones = new PlayerZones(uid == Game.getThisPlayerUID());
         }
     }
 
@@ -290,7 +304,6 @@ module GameObjects {
             this.dText = new PIXI.Text(this.cardText, Helpers.textStyle);
             this.dFlavorText = new PIXI.Text(this.flavorText, Helpers.flavorTextStyle);
 
-
             this.container.addChild(this.dBackground)
             this.container.addChild(this.dName)
             this.container.addChild(this.dType);
@@ -320,8 +333,8 @@ module GameObjects {
 
             this.container.scale = new PIXI.Point(0.25, 0.25);
 
-						this.makeFaceDown();
-						Renderer.addToStage(this.container)
+            this.makeFaceDown();
+            Renderer.addToStage(this.container)
         }
 
         update() {
@@ -371,21 +384,25 @@ module GameObjects {
         voidZone: CardZone;
         hand: CardZone;
 
-        constructor() {
-            this.deck = new CardZone(true, false, false, 10, 0, 400);
-            this.driveDeck = new CardZone(true, false, false, 40, 200, 400);
-            this.terminus = new CardZone(true, true, false, 10, 0, 200);
-            this.voidZone = new CardZone(true, true, false, 20, 200, 200)
-            this.hand = new CardZone(true, true, true, width, 0, 600)
+        constructor(isThisPlayer: boolean) {
+            let yOffset = 0;
+            if (!isThisPlayer) {
+                yOffset = -(height / 2)
+            }
+            this.deck = new CardZone(true, false, false, 40, 0, 560 + yOffset);
+            this.driveDeck = new CardZone(true, false, false, 40, 110, 560 + yOffset);
+            this.terminus = new CardZone(true, true, false, 10, 0, 200 + yOffset);
+            this.voidZone = new CardZone(true, true, false, 20, 200, 200 + yOffset);
+            this.hand = new CardZone(true, true, true, 500, 220, 560 + yOffset);
         }
 
-				update() {
-					this.deck.update();
-					this.driveDeck.update();
-					this.terminus.update();
-					this.voidZone.update();
-					this.hand.update();
-				}
+        update() {
+            this.deck.update();
+            this.driveDeck.update();
+            this.terminus.update();
+            this.voidZone.update();
+            this.hand.update();
+        }
     }
 
     //CardZone class - basically, a list of cards

@@ -61,13 +61,17 @@ var Websocket;
             html = json.user + ": " + json.message;
         }
         else if (type == "gameStateMessage") {
-            html = type + ": " + json.message;
             Game.onRecGameState(json.message);
+        }
+        else if (type == "playerUIDMessage") {
+            html = "You are Player UID: " + json.uid;
+            Game.setThisPlayerUID(json.uid);
         }
         else {
             html = "MSG ERROR: " + json.message;
         }
-        writeToScreen(html);
+        if (html != undefined)
+            writeToScreen(html);
     }
     function onError(evt) {
         writeToScreen("ERROR: " + evt.data);
@@ -85,6 +89,7 @@ var Game;
 (function (Game) {
     var players = Array();
     var cards = Array();
+    var thisPlayerUID;
     function update() {
         players.forEach(function (p) {
             p.playerZones.update();
@@ -108,9 +113,17 @@ var Game;
         players.forEach(function (p) { return console.log(p); });
     }
     Game.onRecGameState = onRecGameState;
+    function setThisPlayerUID(uid) {
+        thisPlayerUID = uid;
+        console.log("Player UID: " + thisPlayerUID);
+    }
+    Game.setThisPlayerUID = setThisPlayerUID;
+    function getThisPlayerUID() {
+        return thisPlayerUID;
+    }
+    Game.getThisPlayerUID = getThisPlayerUID;
     function buildPlayerDataFromGameState(uid, gs) {
-        var pd = new GameObjects.PlayerData(gs.HasName[uid].name);
-        pd.UID = uid;
+        var pd = new GameObjects.PlayerData(gs.HasName[uid].name, uid);
         pd.currentLife = gs.HasHP[uid].currHP;
         pd.intensity = gs.HasPlayerData[uid].intensity;
         pd.power = gs.HasPlayerData[uid].power;
@@ -151,15 +164,15 @@ var Game;
 var GameObjects;
 (function (GameObjects) {
     var PlayerData = (function () {
-        function PlayerData(playerName) {
-            this.UID = "";
+        function PlayerData(playerName, uid) {
+            this.UID = uid;
             this.playerName = playerName;
             this.currentLife = 0;
             this.intensity = "";
             this.power = 0;
             this.personaCount = 0;
             this.driveCount = 0;
-            this.playerZones = new PlayerZones();
+            this.playerZones = new PlayerZones(uid == Game.getThisPlayerUID());
         }
         return PlayerData;
     }());
@@ -252,12 +265,16 @@ var GameObjects;
     }());
     GameObjects.Card = Card;
     var PlayerZones = (function () {
-        function PlayerZones() {
-            this.deck = new CardZone(true, false, false, 10, 0, 400);
-            this.driveDeck = new CardZone(true, false, false, 40, 200, 400);
-            this.terminus = new CardZone(true, true, false, 10, 0, 200);
-            this.voidZone = new CardZone(true, true, false, 20, 200, 200);
-            this.hand = new CardZone(true, true, true, width, 0, 600);
+        function PlayerZones(isThisPlayer) {
+            var yOffset = 0;
+            if (!isThisPlayer) {
+                yOffset = -(height / 2);
+            }
+            this.deck = new CardZone(true, false, false, 40, 0, 560 + yOffset);
+            this.driveDeck = new CardZone(true, false, false, 40, 110, 560 + yOffset);
+            this.terminus = new CardZone(true, true, false, 10, 0, 200 + yOffset);
+            this.voidZone = new CardZone(true, true, false, 20, 200, 200 + yOffset);
+            this.hand = new CardZone(true, true, true, 500, 220, 560 + yOffset);
         }
         PlayerZones.prototype.update = function () {
             this.deck.update();

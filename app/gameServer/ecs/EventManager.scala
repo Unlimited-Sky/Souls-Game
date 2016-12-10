@@ -20,7 +20,10 @@ class EventManager(val componentManager: ComponentManager, val systemManager: Sy
   def dequeueEvent(): Unit = eventQueue.dequeue().onDequeue()
 
   //Runs the "execute" code for the first event in the queue
-  def execute(): Unit = eventQueue.front.execute(this, componentManager, systemManager)
+  def execute(): Unit = {
+    println("Event Executed: " + eventQueue.front)
+    eventQueue.front.execute(this, componentManager, systemManager)
+  }
 
   def hasEvent(): Boolean = { !eventQueue.isEmpty }
 }

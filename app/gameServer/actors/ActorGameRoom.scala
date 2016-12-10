@@ -17,18 +17,25 @@ class ActorGameRoom extends Actor with ActorLogging {
   var players: Map[ActorRef, String] = Map[ActorRef, String]()
   var peers: Map[ActorRef, String] = Map[ActorRef, String]()
 
+  val t = new java.util.Timer()
+  val task = new java.util.TimerTask {
+    def run() = gameEngine.tick()
+  }
+
   //Checks if the game is ready to start
   def checkGameReady(): Unit =  {
     println("Checking for enough players...")
-    if (players.size == maxPlayers)
+    if (players.size == maxPlayers) {
       gameEngine.initializeGame()
+      t.schedule(task, 1000L, 1000L)
+    } 
   }
 
   //Handle all the messages from other actors
   def receive = {
     case PlayerConnect(user, username) =>
     players += user -> username
-    gameEngine.onPlayerConnect(username)
+    user ! new PlayerUIDMessage(gameEngine.onPlayerConnect(username))
     messageEveryone(new TextMessage(s"$username has joined the game."))
 
     if (!gameEngine.gameStarted)
@@ -38,6 +45,7 @@ class ActorGameRoom extends Actor with ActorLogging {
     players -= user
     gameEngine.onPlayerDisconnect(username)
     messageEveryone(new TextMessage(s"$username has left the game."))
+    task.cancel()
 
     case PeerConnect(user, username) =>
     peers += user -> username
