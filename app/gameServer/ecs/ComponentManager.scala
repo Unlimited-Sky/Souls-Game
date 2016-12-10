@@ -25,14 +25,28 @@ class ComponentManager() {
 
   //Removes the component
   def removeComponent(entity: Entity, component: AComponent): Unit = {
-    //b.get(1).get.get("first").get == 111
     if (checkComponentDefined(component))
       components.get(component.getClass).get -= entity
+  }
+
+  //TODO: optimize this later...
+  def removeAllEntityComponents(entity: Entity): Unit = {
+    //remove player entities
+    components.foreach(cls => {
+      cls._2.find({c => c._1 == entity}).foreach(c => {
+        //println("removed component: " + c._2)
+        removeComponent(entity, c._2)
+      })
+    })
   }
 
   //Gets a component
   def getComponent[C <: AComponent](entity: Entity)(implicit t: ClassTag[C]): Option[C] = {
     components.get(t.runtimeClass).get.get(entity).asInstanceOf[Option[C]]
+   }
+
+   def getComponents[C <: AComponent]()(implicit t: ClassTag[C]): Map[Entity, AComponent] = {
+     components.get(t.runtimeClass).get
    }
 
   //Adds the component to the map of maps...
@@ -65,7 +79,6 @@ class ComponentManager() {
       toReturn += "}"
     })
     toReturn += "}"
-    println(toReturn)
     toReturn
   }
 }

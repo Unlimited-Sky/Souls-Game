@@ -16,3 +16,5 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-remote" % "2.4-SNAPSHOT"
 )
 
+javaOptions ++= Seq("-Xmx2048M", "-Xms512M", "-XX:MaxPermSize=2048M")
+

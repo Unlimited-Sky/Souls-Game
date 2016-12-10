@@ -3,6 +3,7 @@
 @main(s"Playing as ${user.username}") {
   <body>You are connected as @user.username</body>
   <script src='@routes.Assets.versioned("javascripts/pixi.js")'></script>
+  <script src='@routes.Assets.versioned("javascripts/howler.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/soulsGame.js")'></script>
   <br>
   <textarea readonly name="gameLog" id="gameLog" cols="179" rows="10"></textarea>

@@ -9,6 +9,7 @@ import ecs.components._
 import ecs.events._
 
 import helpers.CardStack
+import helpers.CardLoader
 
 //The object which handles all game related object
 //Works closesly with its roomActor
@@ -26,6 +27,7 @@ class GameEngine(val roomActor: ActorGameRoom) {
   val systemManager = new SystemManager()
   val eventManager = new EventManager(componentManager, systemManager)
   systemManager.init(eventManager)
+  val cardLoader = new CardLoader(entityManager, componentManager)
 
 	//Increment the state, and do any game-wide changes
   def enterNextPhase(): Unit = {
@@ -58,6 +60,7 @@ class GameEngine(val roomActor: ActorGameRoom) {
         currentGamePhase = GamePhase.TurnStart
       }
     }
+    publishGameState();
   }
 
   def initializeGame(): Unit = {
@@ -75,23 +78,52 @@ class GameEngine(val roomActor: ActorGameRoom) {
     
     import play.api.libs.json._
 
-    //println("Game Initialized!")
     publishGameState()
-    //println("Game state sent!")
   }
 
   def initializePlayer(player: Entity): Unit = {
     componentManager.createComponent[HasHP](player, new HasHP(30))
-    componentManager.createComponent[HasPlayerData](player, new HasPlayerData())
   }
 
   def onPlayerConnect(username: String): Unit = {
   	val connectedPlayerEntity = entityManager.generateEntity()
     players += connectedPlayerEntity
     componentManager.createComponent[HasName](connectedPlayerEntity, new HasName(username))
+    componentManager.createComponent[HasPlayerData](connectedPlayerEntity, new HasPlayerData())
+    publishGameState()
+
+    //TODO add more decks
+    componentManager.getComponent[HasPlayerData](connectedPlayerEntity).get.deck.addCards(cardLoader.loadDeck()) 
+    componentManager.getComponent[HasPlayerData](connectedPlayerEntity).get.driveDeck.addCards(cardLoader.loadDriveDeck())
+  }
+
+  def onPlayerDisconnect(username: String): Unit = {
+    val entityToRemove = componentManager.getComponents[HasName]().find({c => c._2.asInstanceOf[HasName].name == username}).get._1;
+    val pData = componentManager.getComponent[HasPlayerData](entityToRemove).get
+
+    removePlayersCards(pData)
+
+    //println(entityToRemove)
+    componentManager.removeAllEntityComponents(entityToRemove)
+  }
+
+  private def removePlayersCards(pd: HasPlayerData) {
+    removeCardStack(pd.deck)
+    removeCardStack(pd.driveDeck)
+    removeCardStack(pd.terminus)
+    removeCardStack(pd.void)
+    removeCardStack(pd.hand)
+  }
+
+  private def removeCardStack(cs: CardStack) {
+    cs.cards.foreach(c => {
+      componentManager.removeAllEntityComponents(c)
+    })
   }
 
   private def publishGameState() {
-    roomActor.sendGameStateToAll(componentManager.getComponentsJSON);
+    val res = componentManager.getComponentsJSON
+    println(res)
+    roomActor.sendGameStateToAll(res)
   }
 }

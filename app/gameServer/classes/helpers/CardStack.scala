@@ -18,24 +18,29 @@ class CardStack {
   }
 
   //draws "howMany" cards and returns that list
-  def DrawCards(howMany: Int): CardStack = {
+  def drawCards(howMany: Int): CardStack = {
     val split = cards.splitAt(howMany)
     cards = split._2
     new CardStack(split._1)
   }
 
   //shuffles the deck
-  def Shuffle(): CardStack = {
+  def shuffle(): CardStack = {
     cards = util.Random.shuffle(cards)
     this
   }
 
   //returns how many cards are in the stack
-  def Length(): Int = cards.length
+  def length(): Int = cards.length
 
   //adds a card to the stack
-  def AddCards(newStack: CardStack): CardStack = {
+  def addCards(newStack: CardStack): CardStack = {
     cards ++= newStack.cards
+    this
+  }
+
+  def addCard(newCard: Entity): CardStack = {
+    cards += newCard
     this
   }
 }

@@ -27,7 +27,6 @@ class ActorGameRoom extends Actor with ActorLogging {
   //Handle all the messages from other actors
   def receive = {
     case PlayerConnect(user, username) =>
-    //Todo: load the players deck
     players += user -> username
     gameEngine.onPlayerConnect(username)
     messageEveryone(new TextMessage(s"$username has joined the game."))
@@ -36,12 +35,19 @@ class ActorGameRoom extends Actor with ActorLogging {
       checkGameReady()
 
     case PlayerDisconnect(user, username) =>
+    players -= user
+    gameEngine.onPlayerDisconnect(username)
+    messageEveryone(new TextMessage(s"$username has left the game."))
 
     case PeerConnect(user, username) =>
     peers += user -> username
     messageEveryone(new TextMessage(s"$username has joined as a spectator."))
 
     case PeerDisconnect(user, username) =>
+
+    case GameOnNextButtonClicked() => 
+    println("GameOnNextButtonClicked recv")
+    gameEngine.enterNextPhase()
 
     case other =>
       log.error(s"[ActorGameState] Not handled: $other")

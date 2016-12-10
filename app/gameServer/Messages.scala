@@ -22,4 +22,6 @@ object Messages {
   case class PeerDisconnect(actor: ActorRef, username: String)
 
   case class GameStateMessage(gameState: String)
+
+  case class GameOnNextButtonClicked()
 }

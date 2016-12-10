@@ -12,12 +12,21 @@ import ecs.Entity
 import ecs.events.AEvent
 import ecs.components.AComponent
 
-import helpers.CardStack
+//import helpers.CardStack
 
 class ActorPlayerClient(val username: String, val out: ActorRef, val gameLobby: ActorRef)
 extends Actor with ActorLogging {
 
   def receive = {
+    //handle player input here
+    case json: JsValue => {
+      println(json)
+      (json \ "msgType").as[String] match {
+        case "nextButtonClicked" => onNextButtonClicked()
+      }
+    }
+    
+    //Server -> Client messages below...
     case TextMessage(msg) =>
       out ! Json.toJson(Json.obj(
         "type" -> "textMessage",
@@ -31,6 +40,11 @@ extends Actor with ActorLogging {
       ))
     case other =>
       log.error(s"[ActorPlayerClient] Not handled: $other")
+  }
+
+  def onNextButtonClicked(): Unit = {
+    println("next button click received")
+    gameLobby ! GameOnNextButtonClicked()
   }
 
   override def preStart() {
